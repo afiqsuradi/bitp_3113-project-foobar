@@ -10,7 +10,8 @@ repositories {
 }
 
 dependencies {
-    implementation('mysql:mysql-connector-java:5.1.13')
+    implementation('org.flywaydb:flyway-core:11.2.0')
+    implementation('com.mysql:mysql-connector-j:9.1.0')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
