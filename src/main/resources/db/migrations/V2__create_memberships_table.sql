@@ -1,0 +1,5 @@
+CREATE TABLE memberships (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_email VARCHAR(255) UNIQUE NOT NULL,
+    points DECIMAL(10, 2) NOT NULL
+);

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group = 'edu.foobar'
@@ -9,9 +10,16 @@ repositories {
     mavenCentral()
 }
 
+application {
+    mainClass = 'edu.foobar.Main'
+}
+
 dependencies {
+    implementation("org.slf4j:slf4j-api:2.0.16")
+    implementation("ch.qos.logback:logback-classic:1.5.16")
+    runtimeOnly('com.mysql:mysql-connector-j:9.1.0')
     implementation('org.flywaydb:flyway-core:11.2.0')
-    implementation('com.mysql:mysql-connector-j:9.1.0')
+    implementation('org.flywaydb:flyway-mysql:11.2.0')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
