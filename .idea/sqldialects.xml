@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/src/main/java/edu/foobar/dao/MembershipDao.java" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/db/migrations/V1__create_menus_table.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/db/migrations/V2__create_memberships_table.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/db/migrations/V3__create_orders_table.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/db/migrations/V4__create_order_items_table.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/db/migrations/V5__create_payments_table.sql" dialect="MySQL" />
+    <file url="PROJECT" dialect="MySQL" />
   </component>
 </project>
