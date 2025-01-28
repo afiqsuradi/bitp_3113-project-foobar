@@ -15,9 +15,11 @@ public class Database{
             try{
                 Properties props = Config.getConfig();
                 String dbURL = props.getProperty("db.url");
+                String dbName = props.getProperty("db.name");
                 String dbUser = props.getProperty("db.user");
                 String dbPass = props.getProperty("db.password");
-                connection = DriverManager.getConnection(dbURL, dbUser, dbPass);
+                String fullDbURL = dbURL + "/" + dbName;
+                connection = DriverManager.getConnection( fullDbURL, dbUser, dbPass);
             }catch(SQLException e) {
                logger.error(e.getMessage());
             }

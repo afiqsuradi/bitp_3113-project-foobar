@@ -23,7 +23,7 @@ public class FlywayUtil {
                                     props.getProperty("db.user"),
                                     props.getProperty("db.password"))
                             .locations("classpath:db/migrations")
-                            .defaultSchema("fos")
+                            .defaultSchema(props.getProperty("db.name"))
             );
             flyway.migrate();
             logger.info("Database migrations completed successfully.");
