@@ -59,8 +59,9 @@ public class OrderDao implements Dao<Order>{
     @Override
     public void save(Order order) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("INSERT INTO orders (membership_id) VALUES (?)");
+            PreparedStatement stmt = connection.prepareStatement("INSERT INTO orders (membership_id, status) VALUES (?, ?)");
             stmt.setInt(1, order.getMembershipId());
+            stmt.setString(2, order.getStatus().toString());
             stmt.executeUpdate();
         } catch (SQLException e) {
             logger.error(e.getMessage());
@@ -70,9 +71,10 @@ public class OrderDao implements Dao<Order>{
     @Override
     public void update(Order order) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("UPDATE orders SET membership_id=? WHERE id=?");
+            PreparedStatement stmt = connection.prepareStatement("UPDATE orders SET membership_id=?, status=? WHERE id=?");
             stmt.setInt(1, order.getMembershipId());
-            stmt.setInt(2, order.getId());
+            stmt.setString(2, order.getStatus().toString());
+            stmt.setInt(3, order.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             logger.error(e.getMessage());
@@ -90,8 +92,4 @@ public class OrderDao implements Dao<Order>{
         }
     }
 
-    @Override
-    public void softDelete(Order order) {
-
-    }
 }

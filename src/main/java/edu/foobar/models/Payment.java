@@ -3,11 +3,26 @@ package edu.foobar.models;
 public class Payment {
     private int id;
     private int orderId;
-    private double total;
+
+    /**
+     * total is in long for precision, assume total in cent
+     */
+    private long total;
     private Enums.PaymentStatus status;
     private double point;
 
-    public Payment(int orderId, double total, Enums.PaymentStatus status, double point) {
+    /**
+     * This constructor is meant to be used when getting data from database, NOT when creating new data
+     */
+    public Payment(int id, int orderId, long total, Enums.PaymentStatus status, double point) {
+        this.id = id;
+        this.orderId = orderId;
+        this.total = total;
+        this.status = status;
+        this.point = point;
+    }
+
+    public Payment(int orderId, long total, Enums.PaymentStatus status, double point) {
         this.orderId = orderId;
         this.total = total;
         this.status = status;
@@ -26,11 +41,11 @@ public class Payment {
         this.orderId = orderId;
     }
 
-    public double getTotal() {
+    public long getTotal() {
         return total;
     }
 
-    public void setTotal(double total) {
+    public void setTotal(long total) {
         this.total = total;
     }
 

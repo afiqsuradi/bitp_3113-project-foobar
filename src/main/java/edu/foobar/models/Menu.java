@@ -3,11 +3,27 @@ package edu.foobar.models;
 public class Menu {
     private int id;
     private String name;
-    private double price;
+
+    /**
+     * price is in long for precision, assume price in cent
+     */
+    private long price;
     private Enums.FoodCategory category;
 
-    public Menu(int id, String name, double price, Enums.FoodCategory category) {
+    /**
+     * This constructor is meant to be used when getting data from database, NOT when creating new data
+     */
+    public Menu(int id, String name, long price, Enums.FoodCategory category) {
         this.id = id;
+        this.name = name;
+        this.price = price;
+        this.category = category;
+    }
+
+    /**
+     * This constructor is meant to be used when create data to store into database
+     */
+    public Menu(String name, long price, Enums.FoodCategory category) {
         this.name = name;
         this.price = price;
         this.category = category;
@@ -25,11 +41,11 @@ public class Menu {
         this.name = name;
     }
 
-    public double getPrice() {
+    public long getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(long price) {
         this.price = price;
     }
 

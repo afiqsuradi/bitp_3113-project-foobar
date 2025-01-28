@@ -5,8 +5,16 @@ public class Membership {
     private String customerEmail;
     private double points;
 
+    /**
+     * This constructor is meant to be used when getting data from database, NOT when creating new data
+     */
     public Membership(int id, String customerEmail, double points) {
         this.id = id;
+        this.customerEmail = customerEmail;
+        this.points = points;
+    }
+
+    public Membership(String customerEmail, double points) {
         this.customerEmail = customerEmail;
         this.points = points;
     }

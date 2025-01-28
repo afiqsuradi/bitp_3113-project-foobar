@@ -5,8 +5,16 @@ public class Order {
     private int membershipId;
     private Enums.OrderStatus status;
 
+    /**
+     * This constructor is meant to be used when getting data from database, NOT when creating new data
+     */
     public Order(int id, int membershipId, Enums.OrderStatus status) {
         this.id = id;
+        this.membershipId = membershipId;
+        this.status = status;
+    }
+
+    public Order(int membershipId, Enums.OrderStatus status) {
         this.membershipId = membershipId;
         this.status = status;
     }

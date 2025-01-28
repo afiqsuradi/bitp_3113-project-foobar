@@ -5,6 +5,15 @@ public class OrderItem {
     private int orderId;
     private int menuId;
 
+    /**
+     * This constructor is meant to be used when getting data from database, NOT when creating new data
+     */
+    public OrderItem(int id, int orderId, int menuId) {
+        this.id = id;
+        this.orderId = orderId;
+        this.menuId = menuId;
+    }
+
     public OrderItem(int orderId, int menuId) {
         this.orderId = orderId;
         this.menuId = menuId;

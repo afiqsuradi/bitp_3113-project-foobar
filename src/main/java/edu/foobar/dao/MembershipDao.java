@@ -90,16 +90,16 @@ public class MembershipDao implements Dao<Membership> {
             logger.error(e.getMessage());
         }
     }
-
-    @Override
-    public void softDelete(Membership membership){
-        try {
-            PreparedStatement stmt = connection.prepareStatement("UPDATE memberships SET customer_email=?, points=? WHERE id=?");
-            stmt.setString(1, "DELETED");
-            stmt.setInt(2, membership.getId());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            logger.error(e.getMessage());
-        }
-    }
+    // KIV
+    //    @Override
+    //    public void softDelete(Membership membership){
+    //        try {
+    //            PreparedStatement stmt = connection.prepareStatement("UPDATE memberships SET customer_email=?, points=? WHERE id=?");
+    //            stmt.setString(1, "DELETED");
+    //            stmt.setInt(2, membership.getId());
+    //            stmt.executeUpdate();
+    //        } catch (SQLException e) {
+    //            logger.error(e.getMessage());
+    //        }
+    //    }
 }

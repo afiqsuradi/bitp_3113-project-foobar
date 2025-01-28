@@ -27,7 +27,7 @@ public class MenuDao implements Dao<Menu> {
             if(resultSet.next()){
                 int menuId = resultSet.getInt("id");
                 String name = resultSet.getString("name");
-                double price = resultSet.getDouble("price");
+                long price = resultSet.getLong("price");
                 Enums.FoodCategory foodCategory = Enums.FoodCategory.valueOf(resultSet.getString("category"));
                 menu = new Menu(menuId, name, price, foodCategory);
             }
@@ -45,7 +45,7 @@ public class MenuDao implements Dao<Menu> {
             while(resultSet.next()){
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
-                double price = resultSet.getDouble("price");
+                long price = resultSet.getLong("price");
                 Enums.FoodCategory foodCategory = Enums.FoodCategory.valueOf(resultSet.getString("category"));
                 Menu menu = new Menu(id, name, price, foodCategory);
                 menus.add(menu);
@@ -58,7 +58,7 @@ public class MenuDao implements Dao<Menu> {
     @Override
     public void save(Menu menu){
         try{
-            PreparedStatement stmt = connection.prepareStatement("INSERT INTO menus VALUES (name, price, category) VALUES (?, ?, ?)");
+            PreparedStatement stmt = connection.prepareStatement("INSERT INTO menus (name, price, category) VALUES (?, ?, ?)");
             stmt.setString(1, menu.getName());
             stmt.setDouble(2, menu.getPrice());
             stmt.setString(3, menu.getCategory().toString());
@@ -89,15 +89,15 @@ public class MenuDao implements Dao<Menu> {
             logger.error(e.getMessage());
         }
     }
-    @Override
-    public void softDelete(Menu menu){
-        try{
-            PreparedStatement stmt = connection.prepareStatement("UPDATE menus SET name='DELETED' WHERE id=?");
-            stmt.setInt(1, menu.getId());
-            stmt.executeUpdate();
-        }catch(SQLException e){
-            logger.error(e.getMessage());
-        }
-    }
+    //    @Override
+    //    public void softDelete(Menu menu){
+    //        try{
+    //            PreparedStatement stmt = connection.prepareStatement("UPDATE menus SET name='DELETED' WHERE id=?");
+    //            stmt.setInt(1, menu.getId());
+    //            stmt.executeUpdate();
+    //        }catch(SQLException e){
+    //            logger.error(e.getMessage());
+    //        }
+    //    }
 }
 
