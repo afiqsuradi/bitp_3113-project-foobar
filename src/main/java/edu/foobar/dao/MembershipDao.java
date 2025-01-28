@@ -2,12 +2,15 @@ package edu.foobar.dao;
 
 import edu.foobar.models.Membership;
 import edu.foobar.utils.Database;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MembershipDao implements Dao<Membership> {
+    private static final Logger logger = LoggerFactory.getLogger( MembershipDao.class );
     private Connection connection;
 
     public MembershipDao() {
@@ -28,7 +31,7 @@ public class MembershipDao implements Dao<Membership> {
                 membership = new Membership(membershipId, customerEmail, points);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return membership;
     }
@@ -47,7 +50,7 @@ public class MembershipDao implements Dao<Membership> {
                 memberships.add(membership);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return memberships;
     }
@@ -60,7 +63,7 @@ public class MembershipDao implements Dao<Membership> {
             stmt.setDouble(2, membership.getPoints());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -73,7 +76,7 @@ public class MembershipDao implements Dao<Membership> {
             stmt.setInt(3, membership.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -84,7 +87,7 @@ public class MembershipDao implements Dao<Membership> {
             stmt.setInt(1, membership.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -96,7 +99,7 @@ public class MembershipDao implements Dao<Membership> {
             stmt.setInt(2, membership.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 }

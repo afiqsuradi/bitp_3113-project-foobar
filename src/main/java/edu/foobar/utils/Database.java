@@ -1,22 +1,25 @@
 package edu.foobar.utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
 public class Database{
-
+    private static final Logger logger = LoggerFactory.getLogger( Database.class );
     private static Connection connection;
     public static Connection getConnection() {
         if(connection == null){
             try{
-                Properties props = DotEnv.getConfig();
+                Properties props = Config.getConfig();
                 String dbURL = props.getProperty("db.url");
                 String dbUser = props.getProperty("db.user");
                 String dbPass = props.getProperty("db.password");
                 connection = DriverManager.getConnection(dbURL, dbUser, dbPass);
             }catch(SQLException e) {
-                e.printStackTrace();
+               logger.error(e.getMessage());
             }
         }
         return connection;

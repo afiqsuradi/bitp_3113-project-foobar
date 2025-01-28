@@ -6,6 +6,7 @@ build/
 application.properties
 lib/*
 ./.idea
+logs
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

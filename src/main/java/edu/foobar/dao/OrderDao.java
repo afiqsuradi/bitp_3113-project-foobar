@@ -3,12 +3,15 @@ package edu.foobar.dao;
 import edu.foobar.models.Enums;
 import edu.foobar.models.Order;
 import edu.foobar.utils.Database;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderDao implements Dao<Order>{
+    private static final Logger logger = LoggerFactory.getLogger( OrderDao.class );
     private Connection connection;
 
     public OrderDao() {
@@ -29,7 +32,7 @@ public class OrderDao implements Dao<Order>{
                 order = new Order(orderId, membershipId, status);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return order;
     }
@@ -48,7 +51,7 @@ public class OrderDao implements Dao<Order>{
                 orders.add(order);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return orders;
     }
@@ -60,7 +63,7 @@ public class OrderDao implements Dao<Order>{
             stmt.setInt(1, order.getMembershipId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -72,7 +75,7 @@ public class OrderDao implements Dao<Order>{
             stmt.setInt(2, order.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -83,7 +86,7 @@ public class OrderDao implements Dao<Order>{
             stmt.setInt(1, order.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 

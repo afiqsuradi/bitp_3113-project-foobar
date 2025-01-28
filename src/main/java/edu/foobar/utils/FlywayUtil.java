@@ -13,7 +13,7 @@ public class FlywayUtil {
     private static final Logger logger = LoggerFactory.getLogger(FlywayUtil.class);
 
     public static void runMigrations() {
-        Properties props = DotEnv.getConfig();
+        Properties props = Config.getConfig();
 
         try {
             FluentConfiguration fluentConfiguration = new FluentConfiguration();
