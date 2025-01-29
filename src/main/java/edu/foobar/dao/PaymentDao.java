@@ -1,6 +1,7 @@
 package edu.foobar.dao;
 
 import edu.foobar.models.Enums;
+import edu.foobar.models.Menu;
 import edu.foobar.models.Payment;
 import edu.foobar.utils.Database;
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ public class PaymentDao implements Dao<Payment> {
     }
 
     @Override
-    public void save(Payment payment) {
+    public Payment save(Payment payment) {
         try {
             PreparedStatement stmt = connection.prepareStatement("INSERT INTO payments (order_id, total, status, point) VALUES (?, ?, ?, ?)");
             stmt.setInt(1, payment.getOrderId());
@@ -68,13 +69,20 @@ public class PaymentDao implements Dao<Payment> {
             stmt.setString(3, payment.getStatus().toString());
             stmt.setDouble(4, payment.getPoint());
             stmt.executeUpdate();
+
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int id = generatedKeys.getInt(1);
+                payment = new Payment(id, payment.getOrderId(), payment.getTotal(), payment.getStatus(), payment.getPoint());
+            }
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        return payment;
     }
 
     @Override
-    public void update(Payment payment) {
+    public Payment update(Payment payment) {
         try {
             PreparedStatement stmt = connection.prepareStatement("UPDATE payments SET order_id=?, total=?, status=?, point=? WHERE id=?");
             stmt.setInt(1, payment.getOrderId());
@@ -86,6 +94,7 @@ public class PaymentDao implements Dao<Payment> {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        return payment;
     }
 
     @Override

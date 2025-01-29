@@ -12,8 +12,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderDao implements Dao<Order>{
-    private static final Logger logger = LoggerFactory.getLogger( OrderDao.class );
+public class OrderDao implements Dao<Order> {
+    private static final Logger logger = LoggerFactory.getLogger(OrderDao.class);
     private Connection connection;
     private final MembershipDao membershipDao;
     private final OrderItemDao orderItemDao;
@@ -86,19 +86,27 @@ public class OrderDao implements Dao<Order>{
     }
 
     @Override
-    public void save(Order order) {
+    public Order save(Order order) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("INSERT INTO orders (membership_id, status) VALUES (?, ?)");
+            PreparedStatement stmt = connection.prepareStatement("INSERT INTO orders (membership_id, status) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, order.getMembership().getId());
             stmt.setString(2, order.getStatus().toString());
             stmt.executeUpdate();
+
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int id = generatedKeys.getInt(1);
+                order = new Order(id, order.getStatus(), order.getMembership(), new ArrayList<OrderItem>());
+            }
         } catch (SQLException e) {
             logger.error(e.getMessage());
+            return null;
         }
+        return order;
     }
 
     @Override
-    public void update(Order order) {
+    public Order update(Order order) {
         try {
             PreparedStatement stmt = connection.prepareStatement("UPDATE orders SET membership_id=?, status=? WHERE id=?");
             stmt.setInt(1, order.getMembership().getId());
@@ -107,7 +115,9 @@ public class OrderDao implements Dao<Order>{
             stmt.executeUpdate();
         } catch (SQLException e) {
             logger.error(e.getMessage());
+            return null;
         }
+        return order;
     }
 
     @Override
@@ -120,5 +130,4 @@ public class OrderDao implements Dao<Order>{
             logger.error(e.getMessage());
         }
     }
-
 }

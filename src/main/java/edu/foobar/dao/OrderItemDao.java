@@ -79,19 +79,26 @@ public class OrderItemDao implements Dao<OrderItem> {
     }
 
     @Override
-    public void save(OrderItem orderItem) {
+    public OrderItem save(OrderItem orderItem) {
         try {
             PreparedStatement stmt = connection.prepareStatement("INSERT INTO order_items (order_id, menu_id) VALUES (?, ?)");
             stmt.setInt(1, orderItem.getOrderId());
             stmt.setInt(2, orderItem.getMenu().getId());
             stmt.executeUpdate();
+
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int id = generatedKeys.getInt(1);
+                orderItem = new OrderItem(id, orderItem.getOrderId(), orderItem.getMenu());
+            }
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        return orderItem;
     }
 
     @Override
-    public void update(OrderItem orderItem) {
+    public OrderItem update(OrderItem orderItem) {
         try {
             PreparedStatement stmt = connection.prepareStatement("UPDATE order_items SET order_id=?, menu_id=? WHERE id=?");
             stmt.setInt(1, orderItem.getOrderId());
@@ -101,6 +108,7 @@ public class OrderItemDao implements Dao<OrderItem> {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        return orderItem;
     }
 
     @Override

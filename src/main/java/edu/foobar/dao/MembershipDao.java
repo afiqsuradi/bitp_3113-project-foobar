@@ -1,6 +1,7 @@
 package edu.foobar.dao;
 
 import edu.foobar.models.Membership;
+import edu.foobar.models.Menu;
 import edu.foobar.utils.Database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,19 +57,26 @@ public class MembershipDao implements Dao<Membership> {
     }
 
     @Override
-    public void save(Membership membership) {
+    public Membership save(Membership membership) {
         try {
             PreparedStatement stmt = connection.prepareStatement("INSERT INTO memberships (customer_email, points) VALUES (?, ?)");
             stmt.setString(1, membership.getCustomerEmail());
             stmt.setDouble(2, membership.getPoints());
             stmt.executeUpdate();
+
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int id = generatedKeys.getInt(1);
+                membership = new Membership(id, membership.getCustomerEmail(), membership.getPoints());
+            }
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        return membership;
     }
 
     @Override
-    public void update(Membership membership) {
+    public Membership update(Membership membership) {
         try {
             PreparedStatement stmt = connection.prepareStatement("UPDATE memberships SET customer_email=?, points=? WHERE id=?");
             stmt.setString(1, membership.getCustomerEmail());
@@ -78,6 +86,7 @@ public class MembershipDao implements Dao<Membership> {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        return membership;
     }
 
     @Override
