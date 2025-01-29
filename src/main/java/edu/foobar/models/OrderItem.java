@@ -3,32 +3,31 @@ package edu.foobar.models;
 public class OrderItem {
     private int id;
     private int orderId;
-    private int menuId;
+    private Menu menu;
 
     /**
      * This constructor is meant to be used when getting data from database, NOT when creating new data
      */
-    public OrderItem(int id, int orderId, int menuId) {
+    public OrderItem(int id, int orderId, Menu menu) {
         this.id = id;
         this.orderId = orderId;
-        this.menuId = menuId;
+        this.menu = menu;
     }
 
-    public OrderItem(int orderId, int menuId) {
+    public OrderItem(int orderId, Menu menu) {
         this.orderId = orderId;
-        this.menuId = menuId;
     }
 
     public int getId() {
         return id;
     }
 
-    public int getMenuId() {
-        return menuId;
+    public Menu getMenu() {
+        return menu;
     }
 
-    public void setMenuId(int menuId) {
-        this.menuId = menuId;
+    public void setMenu(Menu menu) {
+        this.menu = menu;
     }
 
     public int getOrderId() {

@@ -1,34 +1,42 @@
 package edu.foobar.models;
 
+import java.util.List;
+
 public class Order {
     private int id;
-    private int membershipId;
     private Enums.OrderStatus status;
+    private Membership membership;
+
+    /**
+     * Lists of OrderItem correspond to the current order
+     * */
+    private List<OrderItem> orderItem;
 
     /**
      * This constructor is meant to be used when getting data from database, NOT when creating new data
      */
-    public Order(int id, int membershipId, Enums.OrderStatus status) {
+    public Order(int id, Enums.OrderStatus status, Membership membership, List<OrderItem> orderItem) {
         this.id = id;
-        this.membershipId = membershipId;
         this.status = status;
+        this.membership = membership;
+        this.orderItem = orderItem;
     }
 
-    public Order(int membershipId, Enums.OrderStatus status) {
-        this.membershipId = membershipId;
+    public Order(Membership membership, Enums.OrderStatus status) {
         this.status = status;
+        this.membership = membership;
     }
 
     public int getId() {
         return id;
     }
 
-    public int getMembershipId() {
-        return membershipId;
+    public Membership getMembership() {
+        return membership;
     }
 
-    public void setMembershipId(int membershipId) {
-        this.membershipId = membershipId;
+    public void setMembership(Membership membership) {
+        this.membership = membership;
     }
 
     public Enums.OrderStatus getStatus() {
