@@ -6,18 +6,33 @@ import edu.foobar.utils.FlywayUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 public class Main {
 
     public static final Logger logger = LoggerFactory.getLogger( Main.class );
 
     public static void main(String[] args) {
-        Database.getConnection();
+        Connection connection = null;
         try {
-            FlywayUtil.runMigrations();
-        } catch (FlywayConfigException e) {
-            logger.error("Application startup failed because database migration failed: " + e.getMessage(), e);
-            System.exit(1);
-            return;
+            connection = Database.getConnection();
+            if (connection != null) {
+                logger.info("Database connection established successfully!");
+                // Write business logic HERE V
+            } else {
+                logger.error("Failed to establish database connection.");
+            }
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred: " + e.getMessage(), e);
+        } finally {
+            if(connection != null){
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    logger.error("Error closing connection " + e.getMessage());
+                }
+            }
         }
     }
 }
