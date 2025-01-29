@@ -16,6 +16,7 @@ public class Main {
     public static void main(String[] args) {
         Connection connection = null;
         try {
+            FlywayUtil.runMigrations();
             connection = Database.getConnection();
             if (connection != null) {
                 logger.info("Database connection established successfully!");
@@ -23,9 +24,11 @@ public class Main {
             } else {
                 logger.error("Failed to establish database connection.");
             }
+        } catch (FlywayConfigException e) {
+            logger.error("Application startup failed because database migration failed: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("An unexpected error occurred: " + e.getMessage(), e);
-        } finally {
+        }  finally {
             if(connection != null){
                 try {
                     connection.close();
