@@ -26,4 +26,16 @@ public class Database{
         }
         return connection;
     }
+
+    public static void closeDatabaseConnection(){
+        if(connection != null){
+            try {
+                connection.close();
+                logger.info("Connection is closed!");
+                connection = null;
+            } catch (SQLException e) {
+                logger.error("Error closing connection " + e.getMessage());
+            }
+        }
+    }
 }

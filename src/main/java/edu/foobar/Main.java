@@ -3,6 +3,7 @@ package edu.foobar;
 import edu.foobar.utils.Database;
 import edu.foobar.utils.FlywayConfigException;
 import edu.foobar.utils.FlywayUtil;
+import edu.foobar.views.MenuView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +30,8 @@ public class Main {
         } catch (Exception e) {
             logger.error("An unexpected error occurred: " + e.getMessage(), e);
         }  finally {
-            if(connection != null){
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing connection " + e.getMessage());
-                }
+            if (connection != null) {
+                Database.closeDatabaseConnection();
             }
         }
     }
