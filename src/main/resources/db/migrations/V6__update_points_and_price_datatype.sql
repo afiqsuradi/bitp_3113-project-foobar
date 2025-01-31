@@ -1,0 +1,11 @@
+ALTER TABLE menus
+    MODIFY COLUMN price BIGINT;
+
+ALTER TABLE memberships
+    MODIFY COLUMN points INT;
+
+ALTER TABLE payments
+    MODIFY COLUMN total BIGINT;
+
+ALTER TABLE payments
+    MODIFY COLUMN point INT;
