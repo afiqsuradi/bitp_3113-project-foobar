@@ -1,5 +1,7 @@
 package edu.foobar.models;
 
+import java.text.DecimalFormat;
+
 public class Menu {
     private int id;
     private String name;
@@ -55,5 +57,12 @@ public class Menu {
 
     public void setCategory(Enums.FoodCategory category) {
         this.category = category;
+    }
+
+    public String getFormattedPrice() {
+            double priceInRinggit = (double) this.price / 100.0;
+
+            return (new DecimalFormat("0.00")).format(priceInRinggit);
+
     }
 }
