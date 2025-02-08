@@ -5,7 +5,6 @@ import edu.foobar.models.OrderItem;
 import edu.foobar.utils.Database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,21 +16,23 @@ public class OrderItemDao implements Dao<OrderItem> {
 
     public OrderItemDao() {
         this.connection = Database.getConnection();
-        menuDao = new MenuDao();
+        this.menuDao = new MenuDao();
     }
 
     @Override
     public OrderItem get(int id) {
         OrderItem orderItem = null;
         try {
-            PreparedStatement stmt = connection.prepareStatement("SELECT * FROM order_items WHERE id=?");
+            PreparedStatement stmt = connection.prepareStatement("SELECT FROM order_items WHERE id=?");
             stmt.setInt(1, id);
             ResultSet resultSet = stmt.executeQuery();
+
             if (resultSet.next()) {
                 int orderId = resultSet.getInt("order_id");
                 int menuId = resultSet.getInt("menu_id");
+                int quantity = resultSet.getInt("quantity");
                 Menu menu = menuDao.get(menuId);
-                orderItem = new OrderItem(id, orderId, menu);
+                orderItem = new OrderItem(id, orderId, menu, quantity);
             }
         } catch (SQLException e) {
             logger.error(e.getMessage());
@@ -45,14 +46,16 @@ public class OrderItemDao implements Dao<OrderItem> {
             PreparedStatement stmt = connection.prepareStatement("SELECT * FROM order_items WHERE order_id=?");
             stmt.setInt(1, orderId);
             ResultSet resultSet = stmt.executeQuery();
+
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 int menuId = resultSet.getInt("menu_id");
+                int quantity = resultSet.getInt("quantity"); // Retrieve quantity
                 Menu menu = menuDao.get(menuId);
-                OrderItem orderItem = new OrderItem(id, orderId, menu);
+                OrderItem orderItem = new OrderItem(id, orderId, menu, quantity);  // Use the constructor
                 orderItems.add(orderItem);
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             logger.error(e.getMessage());
         }
         return orderItems;
@@ -64,12 +67,14 @@ public class OrderItemDao implements Dao<OrderItem> {
         try {
             Statement stmt = connection.createStatement();
             ResultSet resultSet = stmt.executeQuery("SELECT * FROM order_items");
+
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 int orderId = resultSet.getInt("order_id");
                 int menuId = resultSet.getInt("menu_id");
+                int quantity = resultSet.getInt("quantity");  // Retrieve quantity
                 Menu menu = menuDao.get(menuId);
-                OrderItem orderItem = new OrderItem(id, orderId, menu);
+                OrderItem orderItem = new OrderItem(id, orderId, menu, quantity); // Use the constructor
                 orderItems.add(orderItem);
             }
         } catch (SQLException e) {
@@ -81,34 +86,50 @@ public class OrderItemDao implements Dao<OrderItem> {
     @Override
     public OrderItem save(OrderItem orderItem) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("INSERT INTO order_items (order_id, menu_id) VALUES (?, ?)");
+            PreparedStatement stmt = connection.prepareStatement(
+                    "INSERT INTO order_items (order_id, menu_id, quantity) VALUES (?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS);
+
             stmt.setInt(1, orderItem.getOrderId());
             stmt.setInt(2, orderItem.getMenu().getId());
+            stmt.setInt(3, orderItem.getQuantity());
+
             stmt.executeUpdate();
 
-            ResultSet generatedKeys = stmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                int id = generatedKeys.getInt(1);
-                orderItem = new OrderItem(id, orderItem.getOrderId(), orderItem.getMenu());
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int id = generatedKeys.getInt(1);
+                    return new OrderItem(id, orderItem.getOrderId(), orderItem.getMenu(), orderItem.getQuantity());
+                } else {
+                    throw new SQLException("Creating order item failed, no ID obtained.");
+                }
             }
+
         } catch (SQLException e) {
             logger.error(e.getMessage());
+            return null;
         }
-        return orderItem;
     }
 
     @Override
     public OrderItem update(OrderItem orderItem) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("UPDATE order_items SET order_id=?, menu_id=? WHERE id=?");
+            PreparedStatement stmt = connection.prepareStatement(
+                    "UPDATE order_items SET order_id=?, menu_id=?, quantity=? WHERE id=?");
+
             stmt.setInt(1, orderItem.getOrderId());
             stmt.setInt(2, orderItem.getMenu().getId());
-            stmt.setInt(3,orderItem.getId());
+            stmt.setInt(3, orderItem.getQuantity());
+            stmt.setInt(4, orderItem.getId());
+
             stmt.executeUpdate();
+
+            return orderItem;
+
         } catch (SQLException e) {
             logger.error(e.getMessage());
+            return null;
         }
-        return orderItem;
     }
 
     @Override
