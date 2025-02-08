@@ -3,9 +3,10 @@ package edu.foobar;
 import edu.foobar.utils.Database;
 import edu.foobar.utils.FlywayConfigException;
 import edu.foobar.utils.FlywayUtil;
-import edu.foobar.views.MenuView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.foobar.views.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,6 +23,7 @@ public class Main {
             if (connection != null) {
                 logger.info("Database connection established successfully!");
                 // Write business logic HERE V
+                AdminView.showMenuLists();
             } else {
                 logger.error("Failed to establish database connection.");
             }
