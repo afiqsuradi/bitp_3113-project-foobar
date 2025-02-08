@@ -20,12 +20,12 @@ public class MenuController {
         return this.menuDAO.getAll();
     }
 
-    public void createMenu(Menu menu){
-        this.menuDAO.save(menu);
+    public Menu createMenu(Menu menu){
+        return this.menuDAO.save(menu);
     }
 
-    public void updateMenu(Menu menu){
-        this.menuDAO.update(menu);
+    public Menu updateMenu(Menu menu){
+        return this.menuDAO.update(menu);
     }
     public void deleteMenu(Menu menu){
         this.menuDAO.delete(menu);
