@@ -31,6 +31,8 @@ import edu.foobar.models.Menu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.awt.Component;
+import javax.swing.RowFilter;
+import javax.swing.table.TableRowSorter;
 
 public class AdminView extends JFrame {
 
@@ -72,11 +74,14 @@ public class AdminView extends JFrame {
     private JButton updateButton = new JButton("Update");
     private JButton cancelButton = new JButton("Cancel");
     private JButton backButton = new JButton("Back");
+    private JButton deleteButton = new JButton("Delete");
 
     private JPanel formPanel;
     private JLabel titleLabel;
 
     private Menu selectedMenu;
+    private JTextField searchField;
+    private TableRowSorter<DefaultTableModel> rowSorter;
 
     public AdminView() {
         super("Admin Menu");
@@ -102,14 +107,40 @@ public class AdminView extends JFrame {
     }
 
     private JPanel createMenuTablePanel() {
-        JPanel menuTablePanel = new JPanel();
+        JPanel menuTablePanel = new JPanel(new BorderLayout());
         String title = "Menu List Table";
         Border border = BorderFactory.createTitledBorder(title);
         menuTablePanel.setBorder(border);
         menuTablePanel.setBackground(BACKGROUND_COLOR);
         menuTablePanel.setLayout(new BorderLayout(3, 3));
+
+        searchField = new JTextField(20);
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filterTable(searchField.getText());
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filterTable(searchField.getText());
+            }
+
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filterTable(searchField.getText());
+            }
+        });
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.setBackground(BACKGROUND_COLOR);
+        searchPanel.add(new JLabel("Search Menu:"));
+        searchPanel.add(searchField);
+        menuTablePanel.add(searchPanel, BorderLayout.NORTH);
+
+        rowSorter = new TableRowSorter<>(tableModel);
+        mytable.setRowSorter(rowSorter);
+
         JScrollPane scrollPane = new JScrollPane(mytable);
         menuTablePanel.add(scrollPane, BorderLayout.CENTER);
+
         return menuTablePanel;
     }
 
@@ -157,8 +188,10 @@ public class AdminView extends JFrame {
         styleButton(createButton);
         styleButton(updateButton);
         styleButton(cancelButton);
+        styleButton(deleteButton);
 
         innerButtonPanel.add(cancelButton);
+        innerButtonPanel.add(deleteButton);
         innerButtonPanel.add(updateButton);
         innerButtonPanel.add(createButton);
 
@@ -199,6 +232,13 @@ public class AdminView extends JFrame {
             }
         });
 
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteMenu();
+            }
+        });
+
         return panel;
     }
 
@@ -236,6 +276,7 @@ public class AdminView extends JFrame {
         createButton.setVisible(isCreateMode);
         updateButton.setVisible(!isCreateMode);
         cancelButton.setVisible(!isCreateMode);
+        deleteButton.setVisible(!isCreateMode);
 
         if (isCreateMode) {
             titleLabel.setText("Create Menu");
@@ -316,6 +357,39 @@ public class AdminView extends JFrame {
             JOptionPane.showMessageDialog(this, "Error updating menu. Please check the data.", "Error", JOptionPane.ERROR_MESSAGE);
             logger.error(ex.getMessage());
         }
+    }
+
+    private void deleteMenu() {
+        if (selectedMenu == null) {
+            JOptionPane.showMessageDialog(this, "No menu selected for deletion.", "Error", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this menu?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                menuController.deleteMenu(selectedMenu);
+                setMenuTable();
+                clearForm();
+                mytable.clearSelection();
+                selectedMenu = null;
+                setFormMode(true);
+                JOptionPane.showMessageDialog(this, "Menu deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error deleting menu.", "Error", JOptionPane.ERROR_MESSAGE);
+                logger.error(ex.getMessage());
+            }
+        }
+    }
+
+    private void filterTable(String query) {
+        RowFilter<DefaultTableModel, Object> rowFilter = null;
+        try {
+            rowFilter = RowFilter.regexFilter(query, 1);
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return;
+        }
+        rowSorter.setRowFilter(rowFilter);
     }
 
     public static void showMenuLists() {
