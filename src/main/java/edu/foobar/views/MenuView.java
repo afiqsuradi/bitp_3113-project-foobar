@@ -159,7 +159,7 @@ public class MenuView extends JFrame {
         button.setFont(new Font("Arial", Font.BOLD, 14));
         button.setFocusPainted(false);
         button.setBorderPainted(false);
-        button.setPreferredSize(new Dimension(200, 30)); 
+        button.setPreferredSize(new Dimension(200, 30));
     }
 
     private JPanel createBottomPanel() {
@@ -180,6 +180,9 @@ public class MenuView extends JFrame {
         redeemPointsCheckbox.setAlignmentX(Component.RIGHT_ALIGNMENT);
         redeemPointsCheckbox.addActionListener(e -> updateReceipt());
 
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.setBackground(BACKGROUND_COLOR);
+
         this.proceedButton = new JButton("Proceed to payment");
         this.proceedButton.addActionListener(this::showPaymentSimulation);
         styleButton(proceedButton);
@@ -187,14 +190,25 @@ public class MenuView extends JFrame {
         this.cancelButton = new JButton("Cancel");
         styleButton(cancelButton);
 
-        JPanel rightPanelContainer = new JPanel();
-        rightPanelContainer.setLayout(new BoxLayout(rightPanelContainer, BoxLayout.Y_AXIS));
-        rightPanelContainer.add(redeemPointsCheckbox);
+        JPanel spacerPanel = new JPanel();
+        spacerPanel.setBackground(BACKGROUND_COLOR);
+        spacerPanel.setPreferredSize(new Dimension(10, 0));
+
+        buttonPanel.add(cancelButton, BorderLayout.LINE_START);
+        buttonPanel.add(spacerPanel, BorderLayout.CENTER);
+        buttonPanel.add(proceedButton, BorderLayout.LINE_END);
+
+        JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        checkboxPanel.setBackground(BACKGROUND_COLOR);
+        checkboxPanel.add(redeemPointsCheckbox);
+
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        rightPanel.add(checkboxPanel);
+        rightPanel.add(buttonPanel);
 
         bottomPanel.add(leftPanel, BorderLayout.WEST);
-        bottomPanel.add(cancelButton, BorderLayout.LINE_START);
-        bottomPanel.add(proceedButton, BorderLayout.LINE_END);
-        bottomPanel.add(rightPanelContainer, BorderLayout.EAST);
+        bottomPanel.add(rightPanel, BorderLayout.EAST);
 
         cancelButton.addActionListener(e -> {
             LoginView.showLogin();
