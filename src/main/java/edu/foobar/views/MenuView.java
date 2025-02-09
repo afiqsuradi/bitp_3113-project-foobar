@@ -1,5 +1,4 @@
 package edu.foobar.views;
-
 import edu.foobar.controllers.MenuController;
 import edu.foobar.controllers.OrderController;
 import edu.foobar.models.Enums;
@@ -11,17 +10,18 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Objects;
 
 public class MenuView extends JFrame {
+
     private final Logger logger = LoggerFactory.getLogger(MenuView.class);
-    private Map<Enums.FoodCategory, List<MenuItemPanel>> menuItemsByCategory = new HashMap<>();
+    private final Membership membership;
+    private final Map<Enums.FoodCategory, List<MenuItemPanel>> menuItemsByCategory = new HashMap<>();
     private JLabel availablePointsLabel;
     private JCheckBox redeemPointsCheckbox;
     private MenuController menuController;
@@ -33,6 +33,7 @@ public class MenuView extends JFrame {
     private List<OrderItem> orderItems = new ArrayList<>();
 
     public MenuView(Membership membership) {
+        this.membership = membership;
         menuController = new MenuController();
         orderController = new OrderController(membership);
         setTitle("Menu Order");
@@ -59,14 +60,14 @@ public class MenuView extends JFrame {
 
         add(mainPanel);
         setVisible(true);
+        updateAvailablePointsLabel();
+        updateRedeemPointsCheckboxState();
     }
 
     private JPanel createMenuPanel() {
         JPanel menuPanel = new JPanel();
         menuPanel.setBorder(new EmptyBorder(20, 15, 20, 15));
-
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
-
         List<Menu> menus = menuController.getAllMenus();
 
         for (Menu menu : menus) {
@@ -74,7 +75,10 @@ public class MenuView extends JFrame {
             if (!menuItemsByCategory.containsKey(category)) {
                 menuItemsByCategory.put(category, new ArrayList<>());
             }
-            menuItemsByCategory.get(category).add(new MenuItemPanel(menu, (menuItem, quantity) -> updateReceipt()));
+            menuItemsByCategory.get(category).add(new MenuItemPanel(menu, (menuItem, quantity) -> {
+                updateOrderItems(menuItem, quantity);
+                updateReceipt();
+            }));
         }
 
         for (Enums.FoodCategory category : menuItemsByCategory.keySet()) {
@@ -102,7 +106,7 @@ public class MenuView extends JFrame {
     }
 
     private JPanel createReceiptPanel() {
-        receiptPanel = new JPanel(new BorderLayout());
+        JPanel receiptPanel = new JPanel(new BorderLayout());
         receiptPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         receiptPanel.setPreferredSize(new Dimension(200, 400));
 
@@ -133,6 +137,7 @@ public class MenuView extends JFrame {
 
         redeemPointsCheckbox = new JCheckBox("Redeem Point");
         redeemPointsCheckbox.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        redeemPointsCheckbox.addActionListener(e -> updateReceipt());
 
         JButton proceedButton = new JButton("Proceed to payment");
         proceedButton.setBackground(Color.GRAY);
@@ -149,6 +154,72 @@ public class MenuView extends JFrame {
         return bottomPanel;
     }
 
+    private void updateAvailablePointsLabel() {
+        availablePointsLabel.setText("Available Point: " + membership.getPoints());
+    }
+
+    private void updateRedeemPointsCheckboxState() {
+        redeemPointsCheckbox.setEnabled(membership.getPoints() >= 200 && !orderItems.isEmpty());
+    }
+
+
+    private void updateOrderItems(Menu menu, int quantity) {
+        boolean found = false;
+        for (OrderItem item : orderItems) {
+            if (Objects.equals(item.getMenu().getId(), menu.getId())) {
+                item.setQuantity(quantity);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            OrderItem newOrderItem = new OrderItem(0, menu, quantity);
+            orderItems.add(newOrderItem);
+        }
+
+        orderItems.removeIf(item -> item.getQuantity() <= 0);
+
+    }
+
+    private void updateReceipt() {
+        NumberFormat formatter = NumberFormat.getCurrencyInstance();
+        StringBuilder receiptText = new StringBuilder();
+        orderTotal = 0.0;
+
+        for (OrderItem item : orderItems) {
+            String itemName = item.getMenu().getName();
+            int itemQuantity = item.getQuantity();
+            double itemPrice = Double.parseDouble(item.getMenu().getFormattedPrice());
+            double currentItemTotal = itemPrice * itemQuantity;
+            receiptText.append(itemName).append(" x ").append(itemQuantity).append("\n");
+            orderTotal += currentItemTotal;
+        }
+        double discount = 0.0;
+        double pointsRedeemed = 0;
+        if(redeemPointsCheckbox.isSelected()){
+            double availablePoints = membership.getPoints();
+            discount = ((availablePoints / 2) / 100);
+            if(discount > orderTotal){
+                discount = orderTotal;
+            }
+            pointsRedeemed = discount * 100 * 2;
+        }
+        orderTotal -= discount;
+        receiptText.append("------------------------\n");
+        receiptText.append("Subtotal: " + formatter.format(orderTotal + discount)+ "\n");
+
+        if (discount > 0) {
+            receiptText.append("Points Redeemed: " + (int)pointsRedeemed + "\n");
+            receiptText.append("Discount Applied: " + formatter.format(discount) + "\n");
+        }
+
+        receiptTextArea.setText(receiptText.toString());
+        totalLabel.setText("Total: " + formatter.format(orderTotal));
+        updateAvailablePointsLabel();
+        updateRedeemPointsCheckboxState();
+    }
+
     private class MenuItemPanel extends JPanel {
         private JLabel quantityLabel;
         private Menu menu;
@@ -157,6 +228,7 @@ public class MenuView extends JFrame {
         public MenuItemPanel(Menu menu, QuantityChangeListener listener) {
             this.menu = menu;
             this.quantityChangeListener = listener;
+
             setLayout(new GridBagLayout());
             setPreferredSize(new Dimension(550, 40));
 
@@ -176,7 +248,6 @@ public class MenuView extends JFrame {
             gbc.anchor = GridBagConstraints.CENTER;
             JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
             pricePanel.add(new JLabel("RM" + menu.getFormattedPrice()));
-
             add(pricePanel, gbc);
 
             gbc.gridx = 2;
@@ -189,95 +260,39 @@ public class MenuView extends JFrame {
             minusButton.setForeground(Color.WHITE);
 
             quantityLabel = new JLabel("0");
-            quantityLabel.setPreferredSize(new Dimension(30,20));
+            quantityLabel.setPreferredSize(new Dimension(30, 20));
 
             JButton plusButton = new JButton("+");
             plusButton.setBackground(Color.GRAY);
             plusButton.setForeground(Color.WHITE);
+
             quantityPanel.add(minusButton);
             quantityPanel.add(quantityLabel);
             quantityPanel.add(plusButton);
 
             add(quantityPanel, gbc);
 
-            plusButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    int currentQuantity = Integer.parseInt(quantityLabel.getText());
-                    int newQuantity = currentQuantity + 1;
-                    quantityLabel.setText(String.valueOf(newQuantity));
-
-                    quantityChangeListener.onQuantityChange(menu, newQuantity);
-
-                    boolean found = false;
-                    for (OrderItem item : orderItems) {
-                        if (item.getMenu().getId() == menu.getId()) {
-                            item.setQuantity(newQuantity);
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        OrderItem newOrderItem = new OrderItem(0, menu, newQuantity);
-                        orderItems.add(newOrderItem);
-                    }
-
-                    updateReceipt();
-                }
+            plusButton.addActionListener(e -> {
+                int currentQuantity = Integer.parseInt(quantityLabel.getText());
+                int newQuantity = currentQuantity + 1;
+                quantityLabel.setText(String.valueOf(newQuantity));
+                quantityChangeListener.onQuantityChange(menu, newQuantity);
             });
 
-            minusButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    int currentQuantity = Integer.parseInt(quantityLabel.getText());
-                    int newQuantity = currentQuantity > 0 ? currentQuantity - 1 : 0;
-
-                    quantityLabel.setText(String.valueOf(newQuantity));
-                    quantityChangeListener.onQuantityChange(menu, newQuantity);
-
-                    for(OrderItem item : orderItems){
-                        if(item.getMenu().getId() == menu.getId()){
-                            if(newQuantity <= 0){
-                                orderItems.remove(item);
-                            }else{
-                                item.setQuantity(newQuantity);
-                            }
-
-                            break;
-                        }
-                    }
-
-                    updateReceipt();
-                }
+            minusButton.addActionListener(e -> {
+                int currentQuantity = Integer.parseInt(quantityLabel.getText());
+                int newQuantity = currentQuantity > 0 ? currentQuantity - 1 : 0;
+                quantityLabel.setText(String.valueOf(newQuantity));
+                quantityChangeListener.onQuantityChange(menu, newQuantity);
             });
         }
-
-    }
-
-    public static void showMenu(Membership membership) {
-        SwingUtilities.invokeLater(() -> new MenuView(membership));
-    }
-
-    private void updateReceipt () {
-        NumberFormat formatter = NumberFormat.getCurrencyInstance();
-
-        StringBuilder receiptText = new StringBuilder();
-        orderTotal = 0.0;
-
-        for(OrderItem item: orderItems){
-            String itemName = item.getMenu().getName();
-            int itemQuantity = item.getQuantity();
-            double itemPrice = Double.parseDouble(item.getMenu().getFormattedPrice());
-            double currentItemTotal = itemPrice * itemQuantity;
-
-            receiptText.append(itemName).append(" x ").append(itemQuantity).append("\n");
-            orderTotal += currentItemTotal;
-        }
-        receiptTextArea.setText(receiptText.toString());
-        totalLabel.setText("Total: " + formatter.format(orderTotal));
     }
 
     private interface QuantityChangeListener {
         void onQuantityChange(Menu menu, int quantity);
+    }
+
+    public static void showMenu(Membership membership) {
+        SwingUtilities.invokeLater(() -> new MenuView(membership));
     }
 }
