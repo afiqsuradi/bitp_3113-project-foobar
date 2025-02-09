@@ -5,6 +5,7 @@ import edu.foobar.controllers.OrderController;
 import edu.foobar.models.Enums;
 import edu.foobar.models.Membership;
 import edu.foobar.models.Menu;
+import edu.foobar.models.OrderItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.*;
@@ -29,6 +30,7 @@ public class MenuView extends JFrame {
     private JLabel totalLabel;
     private double orderTotal = 0.0;
     private OrderController orderController;
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     public MenuView(Membership membership) {
         menuController = new MenuController();
@@ -72,7 +74,7 @@ public class MenuView extends JFrame {
             if (!menuItemsByCategory.containsKey(category)) {
                 menuItemsByCategory.put(category, new ArrayList<>());
             }
-            menuItemsByCategory.get(category).add(new MenuItemPanel(menu, this::updateReceipt));
+            menuItemsByCategory.get(category).add(new MenuItemPanel(menu, (menuItem, quantity) -> updateReceipt()));
         }
 
         for (Enums.FoodCategory category : menuItemsByCategory.keySet()) {
@@ -204,7 +206,23 @@ public class MenuView extends JFrame {
                     int currentQuantity = Integer.parseInt(quantityLabel.getText());
                     int newQuantity = currentQuantity + 1;
                     quantityLabel.setText(String.valueOf(newQuantity));
+
                     quantityChangeListener.onQuantityChange(menu, newQuantity);
+
+                    boolean found = false;
+                    for (OrderItem item : orderItems) {
+                        if (item.getMenu().getId() == menu.getId()) {
+                            item.setQuantity(newQuantity);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        OrderItem newOrderItem = new OrderItem(0, menu, newQuantity);
+                        orderItems.add(newOrderItem);
+                    }
+
+                    updateReceipt();
                 }
             });
 
@@ -213,8 +231,23 @@ public class MenuView extends JFrame {
                 public void actionPerformed(ActionEvent e) {
                     int currentQuantity = Integer.parseInt(quantityLabel.getText());
                     int newQuantity = currentQuantity > 0 ? currentQuantity - 1 : 0;
+
                     quantityLabel.setText(String.valueOf(newQuantity));
                     quantityChangeListener.onQuantityChange(menu, newQuantity);
+
+                    for(OrderItem item : orderItems){
+                        if(item.getMenu().getId() == menu.getId()){
+                            if(newQuantity <= 0){
+                                orderItems.remove(item);
+                            }else{
+                                item.setQuantity(newQuantity);
+                            }
+
+                            break;
+                        }
+                    }
+
+                    updateReceipt();
                 }
             });
         }
@@ -225,29 +258,22 @@ public class MenuView extends JFrame {
         SwingUtilities.invokeLater(() -> new MenuView(membership));
     }
 
-    private void updateReceipt(Menu menu, int quantity) {
+    private void updateReceipt () {
         NumberFormat formatter = NumberFormat.getCurrencyInstance();
-        double itemPrice = Double.parseDouble(menu.getFormattedPrice());
-        double itemTotal = itemPrice * quantity;
 
         StringBuilder receiptText = new StringBuilder();
         orderTotal = 0.0;
-        for (Map.Entry<Enums.FoodCategory, List<MenuItemPanel>> categoryEntry : menuItemsByCategory.entrySet()) {
-            for (MenuItemPanel itemPanel : categoryEntry.getValue()) {
-                String itemName = itemPanel.menu.getName();
-                int itemQuantity = Integer.parseInt(itemPanel.quantityLabel.getText());
 
-                if (itemQuantity > 0) {
-                    double currentPrice = Double.parseDouble(itemPanel.menu.getFormattedPrice());
-                    double currentItemTotal = currentPrice * itemQuantity;
+        for(OrderItem item: orderItems){
+            String itemName = item.getMenu().getName();
+            int itemQuantity = item.getQuantity();
+            double itemPrice = Double.parseDouble(item.getMenu().getFormattedPrice());
+            double currentItemTotal = itemPrice * itemQuantity;
 
-                    receiptText.append(itemName).append(" x ").append(itemQuantity).append(" = ").append(formatter.format(currentItemTotal)).append("\n");
-                    orderTotal += currentItemTotal;
-                }
-            }
+            receiptText.append(itemName).append(" x ").append(itemQuantity).append("\n");
+            orderTotal += currentItemTotal;
         }
         receiptTextArea.setText(receiptText.toString());
-
         totalLabel.setText("Total: " + formatter.format(orderTotal));
     }
 
