@@ -1,4 +1,5 @@
 package edu.foobar.views;
+
 import edu.foobar.controllers.MenuController;
 import edu.foobar.controllers.OrderController;
 import edu.foobar.controllers.PaymentController;
@@ -22,6 +23,14 @@ import java.util.Objects;
 public class MenuView extends JFrame {
 
     private final Logger logger = LoggerFactory.getLogger(MenuView.class);
+
+    private final Color PRIMARY_COLOR = new Color(0x3F51B5);
+    private final Color SECONDARY_COLOR = new Color(0x673AB7);
+    private final Color BACKGROUND_COLOR = new Color(0xE8EAF6);
+    private final Color TEXT_PRIMARY_COLOR = new Color(0x212121);
+    private final Color TEXT_SECONDARY_COLOR = new Color(0x757575);
+    private final Color ACCENT_COLOR = new Color(0xFF4081);
+
     private final Membership membership;
     private final Map<Enums.FoodCategory, List<MenuItemPanel>> menuItemsByCategory = new HashMap<>();
     private JLabel availablePointsLabel;
@@ -33,26 +42,38 @@ public class MenuView extends JFrame {
     private double orderTotal = 0.0;
     private OrderController orderController;
     private List<OrderItem> orderItems = new ArrayList<>();
-    private JButton proceedButton; // NEW
-    private PaymentController paymentController; //NEW
+    private JButton proceedButton;
+    private JButton cancelButton;
+    private PaymentController paymentController;
 
     public MenuView(Membership membership) {
         this.membership = membership;
         menuController = new MenuController();
         orderController = new OrderController(membership);
-        paymentController = new PaymentController(); //NEW
+        paymentController = new PaymentController();
 
-
+        setupUI();
         setTitle("Menu Order");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null);
+        setVisible(true);
+        updateAvailablePointsLabel();
+        updateRedeemPointsCheckboxState();
+        updateProceedButtonState();
+    }
+
+    private void setupUI() {
+        getContentPane().setBackground(BACKGROUND_COLOR);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(BACKGROUND_COLOR);
         JLabel titleLabel = new JLabel("Food Order");
+        titleLabel.setForeground(TEXT_PRIMARY_COLOR);
         titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 20));
         titlePanel.add(titleLabel);
 
@@ -66,14 +87,12 @@ public class MenuView extends JFrame {
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
-        setVisible(true);
-        updateAvailablePointsLabel();
-        updateRedeemPointsCheckboxState();
-        updateProceedButtonState(); //NEW
     }
+
 
     private JPanel createMenuPanel() {
         JPanel menuPanel = new JPanel();
+        menuPanel.setBackground(BACKGROUND_COLOR);
         menuPanel.setBorder(new EmptyBorder(20, 15, 20, 15));
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
         List<Menu> menus = menuController.getAllMenus();
@@ -91,6 +110,7 @@ public class MenuView extends JFrame {
 
         for (Enums.FoodCategory category : menuItemsByCategory.keySet()) {
             JLabel categoryLabel = new JLabel(category.toString());
+            categoryLabel.setForeground(TEXT_PRIMARY_COLOR);
             categoryLabel.setFont(new Font(categoryLabel.getFont().getName(), Font.BOLD, 16));
             categoryLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             menuPanel.add(categoryLabel);
@@ -107,6 +127,7 @@ public class MenuView extends JFrame {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
         JPanel containerPanel = new JPanel(new BorderLayout());
+        containerPanel.setBackground(BACKGROUND_COLOR);
         containerPanel.add(scrollPane, BorderLayout.CENTER);
         containerPanel.setPreferredSize(new Dimension(600, 400));
 
@@ -115,6 +136,7 @@ public class MenuView extends JFrame {
 
     private JPanel createReceiptPanel() {
         JPanel receiptPanel = new JPanel(new BorderLayout());
+        receiptPanel.setBackground(BACKGROUND_COLOR);
         receiptPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         receiptPanel.setPreferredSize(new Dimension(200, 400));
 
@@ -124,40 +146,60 @@ public class MenuView extends JFrame {
         receiptPanel.add(scrollPane, BorderLayout.CENTER);
 
         totalLabel = new JLabel("Total: RM 0.00");
+        totalLabel.setForeground(TEXT_PRIMARY_COLOR);
         totalLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
         receiptPanel.add(totalLabel, BorderLayout.SOUTH);
 
         return receiptPanel;
     }
 
+    private void styleButton(JButton button) {
+        button.setBackground(PRIMARY_COLOR);
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setPreferredSize(new Dimension(200, 30)); 
+    }
+
     private JPanel createBottomPanel() {
         JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBackground(BACKGROUND_COLOR);
 
         JPanel leftPanel = new JPanel();
+        leftPanel.setBackground(BACKGROUND_COLOR);
         leftPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
         availablePointsLabel = new JLabel("Available Point: XX");
+        availablePointsLabel.setForeground(TEXT_PRIMARY_COLOR);
         leftPanel.add(availablePointsLabel);
 
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setAlignmentX(Component.RIGHT_ALIGNMENT);
-
         redeemPointsCheckbox = new JCheckBox("Redeem Point");
+        redeemPointsCheckbox.setBackground(BACKGROUND_COLOR);
+        redeemPointsCheckbox.setForeground(TEXT_PRIMARY_COLOR);
         redeemPointsCheckbox.setAlignmentX(Component.RIGHT_ALIGNMENT);
         redeemPointsCheckbox.addActionListener(e -> updateReceipt());
 
         this.proceedButton = new JButton("Proceed to payment");
-        proceedButton.setBackground(Color.GRAY);
-        proceedButton.setForeground(Color.WHITE);
-        proceedButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        proceedButton.addActionListener(this::showPaymentSimulation);
-        rightPanel.add(redeemPointsCheckbox);
-        rightPanel.add(Box.createVerticalStrut(5));
-        rightPanel.add(proceedButton);
+        this.proceedButton.addActionListener(this::showPaymentSimulation);
+        styleButton(proceedButton);
+
+        this.cancelButton = new JButton("Cancel");
+        styleButton(cancelButton);
+
+        JPanel rightPanelContainer = new JPanel();
+        rightPanelContainer.setLayout(new BoxLayout(rightPanelContainer, BoxLayout.Y_AXIS));
+        rightPanelContainer.add(redeemPointsCheckbox);
 
         bottomPanel.add(leftPanel, BorderLayout.WEST);
-        bottomPanel.add(rightPanel, BorderLayout.EAST);
+        bottomPanel.add(cancelButton, BorderLayout.LINE_START);
+        bottomPanel.add(proceedButton, BorderLayout.LINE_END);
+        bottomPanel.add(rightPanelContainer, BorderLayout.EAST);
+
+        cancelButton.addActionListener(e -> {
+            LoginView.showLogin();
+            dispose();
+        });
 
         return bottomPanel;
     }
@@ -195,10 +237,10 @@ public class MenuView extends JFrame {
 
     private void showPaymentSimulation(ActionEvent e) {
         if (orderItems.isEmpty()) {
-            return; // Do nothing or show an error message
+            return;
         }
 
-        PaymentSimulationPanelView paymentPanel = new PaymentSimulationPanelView(orderItems, redeemPointsCheckbox.isSelected(), membership, this); //NEW
+        PaymentSimulationPanelView paymentPanel = new PaymentSimulationPanelView(orderItems, redeemPointsCheckbox.isSelected(), membership, this);
 
         JDialog dialog = new JDialog(this, "Payment Simulation", true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

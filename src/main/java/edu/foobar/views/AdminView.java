@@ -30,10 +30,18 @@ import edu.foobar.models.Enums;
 import edu.foobar.models.Menu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.awt.Component;
 
 public class AdminView extends JFrame {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminView.class);
+
+    private final Color PRIMARY_COLOR = new Color(0x3F51B5);
+    private final Color SECONDARY_COLOR = new Color(0x673AB7);
+    private final Color BACKGROUND_COLOR = new Color(0xE8EAF6);
+    private final Color TEXT_PRIMARY_COLOR = new Color(0x212121);
+    private final Color TEXT_SECONDARY_COLOR = new Color(0x757575);
+    private final Color ACCENT_COLOR = new Color(0xFF4081);
 
     private String[] columnNames = {"ID", "Name", "Price", "Category"};
     private DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
@@ -59,9 +67,12 @@ public class AdminView extends JFrame {
     private JTextField nameField = new JTextField(20);
     private JTextField priceField = new JTextField(10);
     private JComboBox<Enums.FoodCategory> categoryComboBox = new JComboBox<>(Enums.FoodCategory.values());
+
     private JButton createButton = new JButton("Create");
     private JButton updateButton = new JButton("Update");
     private JButton cancelButton = new JButton("Cancel");
+    private JButton backButton = new JButton("Back");
+
     private JPanel formPanel;
     private JLabel titleLabel;
 
@@ -70,41 +81,24 @@ public class AdminView extends JFrame {
     public AdminView() {
         super("Admin Menu");
         menuController = new MenuController();
+        setupUI();
         setMenuTable();
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1080, 720);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(3, 3));
         setVisible(true);
+        setupTableSelectionListener();
+    }
+
+    private void setupUI() {
+        getContentPane().setBackground(BACKGROUND_COLOR);
 
         formPanel = createMenuFormPanel();
         this.add(formPanel, BorderLayout.NORTH);
         this.add(createMenuTablePanel(), BorderLayout.CENTER);
 
         setFormMode(true);
-        setupTableSelectionListener();
-    }
 
-    private void setupTableSelectionListener() {
-        ListSelectionModel selectionModel = mytable.getSelectionModel();
-        selectionModel.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int selectedRow = mytable.getSelectedRow();
-                    if (selectedRow != -1) {
-                        int id = (int) tableModel.getValueAt(selectedRow, 0);
-                        String name = (String) tableModel.getValueAt(selectedRow, 1);
-                        long price = (long) tableModel.getValueAt(selectedRow, 2);
-                        Enums.FoodCategory category = (Enums.FoodCategory) tableModel.getValueAt(selectedRow, 3);
-
-                        selectedMenu = new Menu(id, name, price, category);
-                        populateForm(selectedMenu);
-                        setFormMode(false);
-                    }
-                }
-            }
-        });
     }
 
     private JPanel createMenuTablePanel() {
@@ -112,11 +106,10 @@ public class AdminView extends JFrame {
         String title = "Menu List Table";
         Border border = BorderFactory.createTitledBorder(title);
         menuTablePanel.setBorder(border);
-        menuTablePanel.setBackground(Color.CYAN);
+        menuTablePanel.setBackground(BACKGROUND_COLOR);
         menuTablePanel.setLayout(new BorderLayout(3, 3));
         JScrollPane scrollPane = new JScrollPane(mytable);
         menuTablePanel.add(scrollPane, BorderLayout.CENTER);
-
         return menuTablePanel;
     }
 
@@ -124,27 +117,53 @@ public class AdminView extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.setPreferredSize(new Dimension(1080, 200));
+        panel.setBackground(BACKGROUND_COLOR);
 
         titleLabel = new JLabel("Create Menu", SwingConstants.CENTER);
         titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16));
+        titleLabel.setForeground(TEXT_PRIMARY_COLOR);
         panel.add(titleLabel, BorderLayout.NORTH);
 
         JPanel inputPanel = new JPanel(new GridLayout(0, 2, 5, 5));
+        inputPanel.setBackground(BACKGROUND_COLOR);
         inputPanel.add(new JLabel("Name:"));
+
+        nameField.setBackground(Color.WHITE);
+        nameField.setForeground(TEXT_PRIMARY_COLOR);
+
         inputPanel.add(nameField);
 
         inputPanel.add(new JLabel("Price:"));
+
+        priceField.setBackground(Color.WHITE);
+        priceField.setForeground(TEXT_PRIMARY_COLOR);
         inputPanel.add(priceField);
 
         inputPanel.add(new JLabel("Category:"));
+
+        categoryComboBox.setBackground(Color.WHITE);
+        categoryComboBox.setForeground(TEXT_PRIMARY_COLOR);
         inputPanel.add(categoryComboBox);
 
         panel.add(inputPanel, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.add(cancelButton);
-        buttonPanel.add(updateButton);
-        buttonPanel.add(createButton);
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        buttonPanel.setBackground(BACKGROUND_COLOR);
+
+        JPanel innerButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        innerButtonPanel.setBackground(BACKGROUND_COLOR);
+
+        styleButton(backButton);
+        styleButton(createButton);
+        styleButton(updateButton);
+        styleButton(cancelButton);
+
+        innerButtonPanel.add(cancelButton);
+        innerButtonPanel.add(updateButton);
+        innerButtonPanel.add(createButton);
+
+        buttonPanel.add(backButton, BorderLayout.WEST);
+        buttonPanel.add(innerButtonPanel, BorderLayout.EAST);
 
         panel.add(buttonPanel, BorderLayout.SOUTH);
 
@@ -172,7 +191,45 @@ public class AdminView extends JFrame {
             }
         });
 
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LoginView.showLogin();
+                dispose();
+            }
+        });
+
         return panel;
+    }
+
+    private void styleButton(JButton button) {
+        button.setBackground(PRIMARY_COLOR);
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+    }
+
+    private void setupTableSelectionListener() {
+        ListSelectionModel selectionModel = mytable.getSelectionModel();
+        selectionModel.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedRow = mytable.getSelectedRow();
+                    if (selectedRow != -1) {
+                        int id = (int) tableModel.getValueAt(selectedRow, 0);
+                        String name = (String) tableModel.getValueAt(selectedRow, 1);
+                        long price = (long) tableModel.getValueAt(selectedRow, 2);
+                        Enums.FoodCategory category = (Enums.FoodCategory) tableModel.getValueAt(selectedRow, 3);
+
+                        selectedMenu = new Menu(id, name, price, category);
+                        populateForm(selectedMenu);
+                        setFormMode(false);
+                    }
+                }
+            }
+        });
     }
 
     private void setFormMode(boolean isCreateMode) {
@@ -221,6 +278,7 @@ public class AdminView extends JFrame {
                 setMenuTable();
                 clearForm();
                 JOptionPane.showMessageDialog(this, "Menu created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                setFormMode(true);
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to create menu.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -235,7 +293,7 @@ public class AdminView extends JFrame {
 
     private void updateMenu() {
         if (selectedMenu == null) {
-            JOptionPane.showMessageDialog(this, "No menu selected for update.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No menu selected for update.", "Error", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
