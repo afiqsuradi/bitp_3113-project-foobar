@@ -1,6 +1,7 @@
 package edu.foobar.views;
 import edu.foobar.controllers.MenuController;
 import edu.foobar.controllers.OrderController;
+import edu.foobar.controllers.PaymentController;
 import edu.foobar.models.Enums;
 import edu.foobar.models.Membership;
 import edu.foobar.models.Menu;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.border.EmptyBorder;
+import java.awt.event.ActionEvent;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +33,16 @@ public class MenuView extends JFrame {
     private double orderTotal = 0.0;
     private OrderController orderController;
     private List<OrderItem> orderItems = new ArrayList<>();
+    private JButton proceedButton; // NEW
+    private PaymentController paymentController; //NEW
 
     public MenuView(Membership membership) {
         this.membership = membership;
         menuController = new MenuController();
         orderController = new OrderController(membership);
+        paymentController = new PaymentController(); //NEW
+
+
         setTitle("Menu Order");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -62,6 +69,7 @@ public class MenuView extends JFrame {
         setVisible(true);
         updateAvailablePointsLabel();
         updateRedeemPointsCheckboxState();
+        updateProceedButtonState(); //NEW
     }
 
     private JPanel createMenuPanel() {
@@ -139,11 +147,11 @@ public class MenuView extends JFrame {
         redeemPointsCheckbox.setAlignmentX(Component.RIGHT_ALIGNMENT);
         redeemPointsCheckbox.addActionListener(e -> updateReceipt());
 
-        JButton proceedButton = new JButton("Proceed to payment");
+        this.proceedButton = new JButton("Proceed to payment");
         proceedButton.setBackground(Color.GRAY);
         proceedButton.setForeground(Color.WHITE);
         proceedButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
-
+        proceedButton.addActionListener(this::showPaymentSimulation);
         rightPanel.add(redeemPointsCheckbox);
         rightPanel.add(Box.createVerticalStrut(5));
         rightPanel.add(proceedButton);
@@ -152,6 +160,10 @@ public class MenuView extends JFrame {
         bottomPanel.add(rightPanel, BorderLayout.EAST);
 
         return bottomPanel;
+    }
+
+    private void updateProceedButtonState() {
+        proceedButton.setEnabled(!orderItems.isEmpty());
     }
 
     private void updateAvailablePointsLabel() {
@@ -163,23 +175,37 @@ public class MenuView extends JFrame {
     }
 
 
-    private void updateOrderItems(Menu menu, int quantity) {
+    private void updateOrderItems(Menu menuItem, int quantity) {
         boolean found = false;
         for (OrderItem item : orderItems) {
-            if (Objects.equals(item.getMenu().getId(), menu.getId())) {
+            if (Objects.equals(item.getMenu().getId(), menuItem.getId())) {
                 item.setQuantity(quantity);
                 found = true;
                 break;
             }
         }
-
         if (!found) {
-            OrderItem newOrderItem = new OrderItem(0, menu, quantity);
+            OrderItem newOrderItem = new OrderItem(0, menuItem, quantity);
             orderItems.add(newOrderItem);
         }
-
         orderItems.removeIf(item -> item.getQuantity() <= 0);
+        updateReceipt();
+        updateProceedButtonState();
+    }
 
+    private void showPaymentSimulation(ActionEvent e) {
+        if (orderItems.isEmpty()) {
+            return; // Do nothing or show an error message
+        }
+
+        PaymentSimulationPanelView paymentPanel = new PaymentSimulationPanelView(orderItems, redeemPointsCheckbox.isSelected(), membership, this); //NEW
+
+        JDialog dialog = new JDialog(this, "Payment Simulation", true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setContentPane(paymentPanel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private void updateReceipt() {

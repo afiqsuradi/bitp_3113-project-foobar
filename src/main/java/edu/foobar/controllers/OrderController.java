@@ -20,7 +20,7 @@ public class OrderController {
         this.orderDao = new OrderDao();
         order = getLatestMemberOrder(membership.getId());
         if (order == null) {
-            orderDao.save(new Order(membership, Enums.OrderStatus.PENDING));
+            order = orderDao.save(new Order(membership, Enums.OrderStatus.PENDING));
         }
     }
 

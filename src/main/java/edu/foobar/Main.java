@@ -25,7 +25,7 @@ public class Main {
                 // Write business logic HERE V
 //                MenuView.showMenu();
 //                AdminView.showMenuLists();
-                LoginView.main(args);
+                LoginView.showLogin();
             } else {
                 logger.error("Failed to establish database connection.");
             }
