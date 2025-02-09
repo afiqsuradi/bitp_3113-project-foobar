@@ -23,7 +23,9 @@ public class Main {
             if (connection != null) {
                 logger.info("Database connection established successfully!");
                 // Write business logic HERE V
-                AdminView.showMenuLists();
+//                MenuView.showMenu();
+//                AdminView.showMenuLists();
+                LoginView.main(args);
             } else {
                 logger.error("Failed to establish database connection.");
             }

@@ -14,6 +14,7 @@ public class Enums {
 
     public enum OrderStatus {
         PENDING,
+        PROCESSING,
         DONE
     }
 }

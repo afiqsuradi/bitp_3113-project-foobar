@@ -1,7 +1,9 @@
 package edu.foobar.views;
 
 import edu.foobar.controllers.MenuController;
+import edu.foobar.controllers.OrderController;
 import edu.foobar.models.Enums;
+import edu.foobar.models.Membership;
 import edu.foobar.models.Menu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +28,11 @@ public class MenuView extends JFrame {
     private JTextArea receiptTextArea;
     private JLabel totalLabel;
     private double orderTotal = 0.0;
+    private OrderController orderController;
 
-    public MenuView() {
+    public MenuView(Membership membership) {
         menuController = new MenuController();
-
+        orderController = new OrderController(membership);
         setTitle("Menu Order");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -218,8 +221,8 @@ public class MenuView extends JFrame {
 
     }
 
-    public static void showMenu() {
-        SwingUtilities.invokeLater(() -> new MenuView());
+    public static void showMenu(Membership membership) {
+        SwingUtilities.invokeLater(() -> new MenuView(membership));
     }
 
     private void updateReceipt(Menu menu, int quantity) {

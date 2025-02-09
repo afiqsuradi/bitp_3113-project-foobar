@@ -27,12 +27,13 @@ public class OrderDao implements Dao<Order> {
     public Order getLatestMemberOrder(int membershipId) {
         Order order = null;
         try {
-            PreparedStatement stmt = connection.prepareStatement("SELECT id AS order_id, membership_id, status AS order_status FROM orders WHERE membership_id = ? ORDER BY id DESC LIMIT 1");
+            PreparedStatement stmt = connection.prepareStatement("SELECT id AS order_id, membership_id, status AS order_status FROM orders WHERE membership_id = ? AND status = ? ORDER BY order_id DESC LIMIT 1");
             stmt.setInt(1, membershipId);
+            stmt.setString(2, Enums.OrderStatus.PENDING.toString());
             ResultSet resultSet = stmt.executeQuery();
             if (resultSet.next()) {
-                int orderId = resultSet.getInt("id");
-                Enums.OrderStatus status = Enums.OrderStatus.valueOf(resultSet.getString("status"));
+                int orderId = resultSet.getInt("order_id");
+                Enums.OrderStatus status = Enums.OrderStatus.valueOf(resultSet.getString("order_status"));
                 Membership membership = membershipDao.get(membershipId);
                 List<OrderItem> orderItems = orderItemDao.getOrderItemByOrderId(orderId);
                 order = new Order(orderId, status, membership, orderItems);
@@ -96,13 +97,15 @@ public class OrderDao implements Dao<Order> {
             ResultSet generatedKeys = stmt.getGeneratedKeys();
             if (generatedKeys.next()) {
                 int id = generatedKeys.getInt(1);
-                order = new Order(id, order.getStatus(), order.getMembership(), new ArrayList<OrderItem>());
+                return new Order(id, order.getStatus(), order.getMembership(), new ArrayList<OrderItem>());
+            } else {
+                logger.error("Failed to retrieve generated key for order.");
+                return null;
             }
         } catch (SQLException e) {
-            logger.error(e.getMessage());
+            logger.error("Error saving order: " + e.getMessage(), e);
             return null;
         }
-        return order;
     }
 
     @Override

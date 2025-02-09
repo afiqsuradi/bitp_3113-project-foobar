@@ -1,7 +1,6 @@
 package edu.foobar.dao;
 
 import edu.foobar.models.Membership;
-import edu.foobar.models.Menu;
 import edu.foobar.utils.Database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,24 @@ public class MembershipDao implements Dao<Membership> {
         return membership;
     }
 
+    public Membership get(String email) {
+        Membership membership = null;
+        try {
+            PreparedStatement stmt = connection.prepareStatement("SELECT * FROM memberships WHERE customer_email=?");
+            stmt.setString(1, email);
+            ResultSet resultSet = stmt.executeQuery();
+            if (resultSet.next()) {
+                int membershipId = resultSet.getInt("id");
+                String customerEmail = resultSet.getString("customer_email");
+                double points = resultSet.getDouble("points");
+                membership = new Membership(membershipId, customerEmail, points);
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return membership;
+    }
+
     @Override
     public List<Membership> getAll() {
         List<Membership> memberships = new ArrayList<>();
@@ -59,7 +76,7 @@ public class MembershipDao implements Dao<Membership> {
     @Override
     public Membership save(Membership membership) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("INSERT INTO memberships (customer_email, points) VALUES (?, ?)");
+            PreparedStatement stmt = connection.prepareStatement("INSERT INTO memberships (customer_email, points) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, membership.getCustomerEmail());
             stmt.setDouble(2, membership.getPoints());
             stmt.executeUpdate();
@@ -99,16 +116,4 @@ public class MembershipDao implements Dao<Membership> {
             logger.error(e.getMessage());
         }
     }
-    // KIV
-    //    @Override
-    //    public void softDelete(Membership membership){
-    //        try {
-    //            PreparedStatement stmt = connection.prepareStatement("UPDATE memberships SET customer_email=?, points=? WHERE id=?");
-    //            stmt.setString(1, "DELETED");
-    //            stmt.setInt(2, membership.getId());
-    //            stmt.executeUpdate();
-    //        } catch (SQLException e) {
-    //            logger.error(e.getMessage());
-    //        }
-    //    }
 }

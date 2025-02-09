@@ -17,19 +17,32 @@ public class FlywayUtil {
 
         try {
             FluentConfiguration fluentConfiguration = new FluentConfiguration();
-            Flyway flyway = new Flyway(
-                    fluentConfiguration.dataSource(
-                                    props.getProperty("db.url"),
-                                    props.getProperty("db.user"),
-                                    props.getProperty("db.password"))
-                            .locations("classpath:db/migrations")
-                            .defaultSchema(props.getProperty("db.name"))
-            );
-            flyway.migrate();
-            logger.info("Database migrations completed successfully.");
-        } catch (FlywayException e) {
-            logger.error("Flyway migration failed: " + e.getMessage(), e);
-            throw new FlywayConfigException("Flyway migration failed!", e);
+            Flyway flyway = new Flyway(fluentConfiguration
+                    .dataSource(
+                            props.getProperty("db.url"),
+                            props.getProperty("db.user"),
+                            props.getProperty("db.password"))
+                    .locations("classpath:db/migrations")
+                    .defaultSchema(props.getProperty("db.name")));
+
+            try {
+                flyway.migrate();
+                logger.info("Database migrations completed successfully.");
+            } catch (FlywayException e) {
+                logger.error("Flyway migration failed: " + e.getMessage(), e);
+                try {
+                    logger.warn("Attempting Flyway repair...");
+                    flyway.repair();
+                    logger.info("Flyway repair completed.");
+                } catch (FlywayException repairException){
+                    logger.error("Flyway repair failed: " + repairException.getMessage(), repairException);
+                    throw new FlywayConfigException("Flyway migration and repair failed!", e);
+
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error configuring Flyway: " + e.getMessage(), e);
+            throw new FlywayConfigException("Flyway configuration failed!", e);
         }
     }
 }
