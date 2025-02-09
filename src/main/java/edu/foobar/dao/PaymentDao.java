@@ -63,7 +63,7 @@ public class PaymentDao implements Dao<Payment> {
     @Override
     public Payment save(Payment payment) {
         try {
-            PreparedStatement stmt = connection.prepareStatement("INSERT INTO payments (order_id, total, status, point) VALUES (?, ?, ?, ?)");
+            PreparedStatement stmt = connection.prepareStatement("INSERT INTO payments (order_id, total, status, point) VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, payment.getOrderId());
             stmt.setLong(2, payment.getTotal());
             stmt.setString(3, payment.getStatus().toString());

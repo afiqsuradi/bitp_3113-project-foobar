@@ -16,6 +16,8 @@ application {
 }
 
 dependencies {
+    implementation("com.itextpdf:kernel:7.2.5")
+    implementation("com.itextpdf:layout:7.2.5")
     implementation("org.slf4j:slf4j-api:2.0.16")
     implementation("ch.qos.logback:logback-classic:1.5.16")
     runtimeOnly('com.mysql:mysql-connector-j:9.1.0')

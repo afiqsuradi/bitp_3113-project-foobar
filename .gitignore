@@ -45,5 +45,4 @@ bin/
 ### Mac OS ###
 .DS_Store
 
-### amin ignore ###
-src/main/resources/application.properties
+receipts

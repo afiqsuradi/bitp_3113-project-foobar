@@ -15,12 +15,13 @@ public class OrderController {
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
     private static Order order;
 
-    /**
-     *
-     * @param membershipId membershipId to indicate current order session
-     */
-    public OrderController(int membershipId) {
+
+    public OrderController(Membership membership) {
         this.orderDao = new OrderDao();
+        order = getLatestMemberOrder(membership.getId());
+        if (order == null) {
+            order = orderDao.save(new Order(membership, Enums.OrderStatus.PENDING));
+        }
     }
 
     public static Order getCurrentOrder() throws Exception{
@@ -43,10 +44,11 @@ public class OrderController {
         return order;
     }
 
-    public Order getLatestMemberOrder(int membershipId) throws Exception{
+    public Order getLatestMemberOrder(int membershipId){
         Order order = orderDao.getLatestMemberOrder(membershipId);
         if(order == null){
             logger.warn("Order not found for membership id: " + membershipId);
+            return null;
         }
         return order;
     }
